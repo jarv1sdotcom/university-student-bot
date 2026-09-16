@@ -1,0 +1,14 @@
+[
+  {
+    "id": 100000001,
+    "moderator": 1,
+    "group": "DEMO-101",
+    "name": "Студент A"
+  },
+  {
+    "id": 100000002,
+    "moderator": 0,
+    "group": "DEMO-101",
+    "name": "Студент B"
+  }
+]

@@ -1,0 +1,16 @@
+.env
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.DS_Store
+
+data/*.json
+!data/*.example.json
+
+schedule/*
+!schedule/README.md
+
+*.docx
+*.xlsx
+*.xls
