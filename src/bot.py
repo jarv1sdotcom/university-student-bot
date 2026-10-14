@@ -25,7 +25,7 @@ dp = Dispatcher(bot, storage=storage)
 
 MAX_SCORE = 30
 ADMIN_ID = int(os.getenv("ADMIN_ID", "0"))
-COMMITTEE_CHAT_ID = int(os.getenv("COMMITTEE_CHAT_ID", "0"))
+TASKS_CHAT_ID = int(os.getenv("TASKS_CHAT_ID", "0"))
 MAX_STREAMS_PER_USER = 5
 INVITE_EXPIRATION = timedelta(days=1)
 DATA_DIRECTORY = os.getenv("DATA_DIR", "data")
@@ -37,7 +37,10 @@ students_file = os.path.join(DATA_DIRECTORY, "students.json")
 mailing_file = os.path.join(DATA_DIRECTORY, "mailing.json")
 # Директория для хранения файла расписания
 SCHEDULE_DIRECTORY = os.getenv("SCHEDULE_DIR", "schedule")
-SCHEDULE_FILENAME = os.path.join(SCHEDULE_DIRECTORY, "Расписание УМЦ.xlsx")  # Пример, можно изменить расширение
+SCHEDULE_FILENAME = os.path.join(
+    SCHEDULE_DIRECTORY,
+    os.getenv("SCHEDULE_FILENAME", "schedule.xlsx"),
+)
 
 # Убедитесь, что директория для хранения файла существует
 if not os.path.exists(SCHEDULE_DIRECTORY):
@@ -153,7 +156,7 @@ async def add_work(message: types.Message):
     if message.from_user.id != ADMIN_ID:
         await message.reply("У вас нет прав для выполнения этой команды.")
         return
-    if not COMMITTEE_CHAT_ID:
+    if not TASKS_CHAT_ID:
         await message.reply("Чат для публикации заданий не настроен.")
         return
 
@@ -181,7 +184,7 @@ async def add_work(message: types.Message):
     markup = InlineKeyboardMarkup().add(
         InlineKeyboardButton("Откликнуться", callback_data=f"respond_work:{work_id}")
     )
-    work_msg = await bot.send_message(COMMITTEE_CHAT_ID, work_message, reply_markup=markup)
+    work_msg = await bot.send_message(TASKS_CHAT_ID, work_message, reply_markup=markup)
     active_works[work_id] = {
         'message_id': work_msg.message_id,
         'task': task_text,
@@ -207,20 +210,20 @@ async def handle_response(callback: types.CallbackQuery):
     work['responses'].append(user_key)
     display_name = callback.from_user.username or callback.from_user.full_name
     await bot.send_message(
-        COMMITTEE_CHAT_ID,
+        TASKS_CHAT_ID,
         f"{display_name} откликнулся(-ась) на задание: {work['task']}",
     )
 
     if len(work['responses']) >= work['max_responses']:
         try:
             await bot.edit_message_reply_markup(
-                COMMITTEE_CHAT_ID,
+                TASKS_CHAT_ID,
                 work['message_id'],
                 reply_markup=None,
             )
         except MessageNotModified:
             pass
-        await bot.send_message(COMMITTEE_CHAT_ID, "Приём откликов завершён.")
+        await bot.send_message(TASKS_CHAT_ID, "Приём откликов завершён.")
 
     await callback.answer("Вы откликнулись на задание!")
 
